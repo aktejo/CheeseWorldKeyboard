@@ -38,11 +38,27 @@ public class CheeseWorld implements Runnable, KeyListener {
     public Image cheesePic;
     public Image mousePic;
     public Image tomPic;
+    public Image backgroundPic;
+    public Image bulletPic;
+    public Image cannonpic;
+    public Image gempic;
+    public Image swordpic;
+    public int points = 0;
+    public int x;
+    public int y;
+    public double angle;
+    public int bulletDestX;
+    public int bulletDestY;
 
     //Declare the character objects
-    public Mouse mouse1;
+    public Enemy mouse1;
     public Cheese theCheese;
     public Player user;
+    public background background1;
+    public bullet[] bullets = new bullet[100];
+    public Enemy cannon[];
+    public sword sword;
+    public gem gem[];
 
     // Main method definition
     // This is the code that runs first and automatically
@@ -66,11 +82,35 @@ public class CheeseWorld implements Runnable, KeyListener {
         cheesePic = Toolkit.getDefaultToolkit().getImage("cheese.gif");
         mousePic = Toolkit.getDefaultToolkit().getImage("jerry.gif");
         tomPic = Toolkit.getDefaultToolkit().getImage("tomCat.png");
+        backgroundPic = Toolkit.getDefaultToolkit().getImage("flag scroll thing.jpeg");
+        bulletPic = Toolkit.getDefaultToolkit().getImage("bullet.png");
+        cannonpic = Toolkit.getDefaultToolkit().getImage("cannonpic.png");
+        swordpic = Toolkit.getDefaultToolkit().getImage("swordslash.png");
+        gempic = Toolkit.getDefaultToolkit().getImage("gem.png");
+
 
         //create (construct) the objects needed for the game
-        mouse1 = new Mouse(200, 300, 4, 4, mousePic);
+        mouse1 = new Enemy(700, 600, 4, 4, mousePic);
         theCheese = new Cheese(400, 300, 3, -4, cheesePic);
         user = new Player(250, 250, 0, 0, tomPic);
+        background1 = new background(0, -700, 2, backgroundPic);
+        sword = new sword(-100, -100, 0, 0, swordpic);
+
+        //Construct and fill bullet array
+        bullets = new bullet[20];
+
+
+        cannon = new Enemy[20];
+        for(int i=0; i<cannon.length; i++) {
+            cannon[i] = new Enemy((int) (Math.random()*(930)), (int) (Math.random()*-2100), 0, 2, cannonpic);
+            bullets[i] = new bullet(100, -100, 0, 0, bulletPic);
+        }
+
+        gem = new gem[5];
+        for(int i=0; i<gem.length; i++) {
+            gem[i] = new gem((int) (Math.random()*(930)), (int) (Math.random()*-2100), 0, 2, gempic);
+        }
+
 
     } // CheeseWorld()
 
@@ -83,11 +123,140 @@ public class CheeseWorld implements Runnable, KeyListener {
     public void moveThings() {
         mouse1.move();
         theCheese.move();
-        user.move();
+        if (user.isAlive) {
+            user.move();
+            sword.swordAlive();
+        } else if (!user.isAlive) {
+            sword.isAlive = false;
+        }
+        if (sword.isAlive) {
+            sword.xpos = user.xpos - 30;
+            sword.ypos = user.ypos - 38;
+        } else {
+            sword.xpos = -100;
+            sword.ypos = -100;
+        }
+        background1.scroll();
+        for(int i=0; i<cannon.length; i++) {
+            cannon[i].move();
+            if (cannon[i].ypos > 700) {
+                cannon[i].xpos = (int) (Math.random()*1000);
+                cannon[i].ypos = (int) (Math.random()*-2100);
+                cannon[i].isAlive = true;
+                System.out.println("enemy died, respawned to " + cannon[i].xpos + "," + cannon[i].ypos);
+            }
+        }
+        for (int i=0; i<gem.length; i++) {
+            gem[i].move();
+            if (gem[i].ypos > 700) {
+                gem[i].xpos = (int) (Math.random()*1000);
+                gem[i].ypos = (int) (Math.random()*-2100);
+            }
+        }
+        for(int i=0; i< cannon.length; i++) {
+/*            x = (int)(Math.random()*500);
+            y = (int)(Math.random()*500);
+            //if (bullets[i].xpos < (0-bullets[i].width) || bullets[i].xpos > 1000 || bullets[i].ypos < (0-bullets[i].height) || bullets[i].ypos > 700)
+            if (bullets[i].xpos < (0) || bullets[i].xpos > 1000 || bullets[i].ypos < (0) || bullets[i].ypos > 700) {
+//                bullets[i].xpos = cannon[i].xpos;
+//                bullets[i].ypos = cannon[i].ypos;
+//                bullets[i].dx = cannon[i].dx;
+//                bullets[i].dy = cannon[i].dy;
+
+                bullets[i].xpos = -100;
+                bullets[i].ypos = -100;
+                bullets[i].dx = 0;
+                bullets[i].dy = 0;
+                bullets[i].isAlive = false;
+
+            }
+            if (x == y && bullets[i].isAlive == false) {
+                bullets[i].xpos = cannon[i].xpos;
+                bullets[i].ypos = cannon[i].ypos;
+                bullets[i].dx = 5;
+                bullets[i].dy = 5;
+                bullets[i].isAlive = true;
+                if (user.dx > 0 && user.dy > 0) {
+                    bulletDestX = user.xpos + 10;
+                    bulletDestY = user.ypos + 10;
+                } else if (user.dx < 0 && user.dy > 0) {
+                    bulletDestX = user.xpos - 10;
+                    bulletDestY = user.ypos + 10;
+                } else if (user.dx > 0 && user.dy < 0) {
+                    bulletDestX = user.xpos + 10;
+                    bulletDestY = user.ypos - 10;
+                } else if (user.dx < 0 && user.dy < 0) {
+                    bulletDestX = user.xpos - 10;
+                    bulletDestY = user.ypos - 10;
+                } else {
+                    bulletDestX = user.xpos;
+                    bulletDestY = user.ypos;
+                }
+
+                //System.out.println("bullet " + i + " is going to " + bulletDestX + "," + bulletDestY);
+
+                System.out.println(x + " and " + y);
+
+
+                angle = Math.atan2(bulletDestY - bullets[i].ypos, bulletDestX - bullets[i].xpos);
+                System.out.println(angle);
+                bullets[i].xpos += (int) (bullets[i].dx * Math.cos(angle));
+                bullets[i].ypos += (int) (bullets[i].dy * Math.sin(angle));
+
+                System.out.println((int) (bullets[i].dx * Math.cos(angle)) + " and " + (int) (bullets[i].dy * Math.sin(angle)));
+
+//                bullets[i].dx = (bulletDestX - bullets[i].xpos) / 20;
+//                bullets[i].dy = (bulletDestY - bullets[i].xpos) / 20;
+
+
+            }
+            if (bullets[i].isAlive ==true) {
+                bullets[i].xpos += (int) (bullets[i].dx * Math.cos(angle));
+                bullets[i].ypos += (int) (bullets[i].dy * Math.sin(angle));
+            }*/
+            if (user.dx > 0 && user.dy > 0) {
+                bullets[i].bulletDestX = user.xpos +(user.width/2) + user.width;
+                bullets[i].bulletDestY = user.ypos+(user.height/2) + user.height;
+            } else if (user.dx < 0 && user.dy > 0) {
+                bullets[i].bulletDestX = user.xpos - user.width;
+                bullets[i].bulletDestY = user.ypos+(user.height/2) + user.height;
+            } else if (user.dx > 0 && user.dy < 0) {
+                bullets[i].bulletDestX = user.xpos+(user.width/2) + user.width;
+                bullets[i].bulletDestY = user.ypos - user.height;
+            } else if (user.dx < 0 && user.dy < 0) {
+                bullets[i].bulletDestX = user.xpos - user.width;
+                bullets[i].bulletDestY = user.ypos - user.height;
+            } else {
+                bullets[i].bulletDestX = user.xpos+(user.width/2);
+                bullets[i].bulletDestY = user.ypos+(user.height/2);
+            }
+            bullets[i].bulletStartingX = cannon[i].xpos+30;
+            bullets[i].bulletStartingY = cannon[i].ypos-20;
+            bullets[i].move();
+
+        }
     }
 
     public void checkIntersections() {
-
+        for(int i=0; i< cannon.length; i++) {
+            if (user.rec.intersects(bullets[i].rec)) {
+                user.isAlive = false;
+            }
+            if (user.rec.intersects(cannon[i].rec)) {
+                user.isAlive = false;
+            }
+            if (cannon[i].rec.intersects(sword.rec)) {
+                cannon[i].isAlive = false;
+                cannon[i].ypos = 1000;
+            }
+        }
+        for(int i=0; i< gem.length; i++) {
+            if (gem[i].rec.intersects(user.rec)) {
+                gem[i].isAlive = false;
+                gem[i].ypos = 1000;
+                points ++;
+            }
+        }
     }
 
     public void run() {
@@ -103,11 +272,50 @@ public class CheeseWorld implements Runnable, KeyListener {
     public void render() {
         Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("SansSerif", Font.BOLD, 25));
+
 
         //draw characters to the screen
-        g.drawImage(mouse1.pic, mouse1.xpos, mouse1.ypos, mouse1.width, mouse1.height, null);
-        g.drawImage(theCheese.pic, theCheese.xpos, theCheese.ypos, theCheese.width, theCheese.height, null);
-        g.drawImage(user.pic, user.xpos, user.ypos, user.width, user.height, null);
+        g.drawImage(background1.pic, background1.xpos, background1.ypos, background1.width, background1.height, null);
+        if (mouse1.isAlive == true) {
+            g.drawImage(mouse1.pic, mouse1.xpos, mouse1.ypos, mouse1.width, mouse1.height, null);
+        }
+        //g.drawImage(theCheese.pic, theCheese.xpos, theCheese.ypos, theCheese.width, theCheese.height, null);
+        if(user.isAlive == true) {
+            g.drawImage(user.pic, user.xpos, user.ypos, user.width, user.height, null);
+        }
+
+        for(int i=0; i<gem.length; i++) {
+            if(gem[i].isAlive == true) {
+                g.drawImage(gempic, gem[i].xpos, gem[i].ypos, gem[i].width, gem[i].height, null);
+            }
+        }
+
+        for(int i=0; i<cannon.length; i++) {
+            if(cannon[i].isAlive == true) {
+                g.drawImage(cannonpic, cannon[i].xpos, cannon[i].ypos, cannon[i].width, cannon[i].height, null);
+            }
+        }
+
+        for(int i=0; i<cannon.length; i++) {
+            if(bullets[i].isAlive == true) {
+                g.drawImage(bulletPic, bullets[i].xpos, bullets[i].ypos, bullets[i].width, bullets[i].height, null);
+            }
+        }
+        if(sword.isAlive == true) {
+            g.drawImage(sword.pic, sword.xpos, sword.ypos, sword.width, sword.height, null);
+        }
+
+        if (user.isAlive) {
+            g.drawString("Score: " + points, 20, 30);
+        }
+
+        if (!user.isAlive) {
+            g.setFont(new Font("SansSerif", Font.BOLD, 50));
+            g.drawString("GAME OVER", 350, 200);
+            g.drawString("Score: " + points, 400, 275);
+        }
 
         g.dispose();
         bufferStrategy.show();
@@ -127,15 +335,29 @@ public class CheeseWorld implements Runnable, KeyListener {
         if (keyCode == 68) { // d
             user.right = true;
         }
+        if (keyCode == 39) { // right arrow
+            mouse1.right = true;
+        }
         if (keyCode == 65) { // a
             user.left = true;
         }
-
+        if (keyCode == 37) { // left arrow
+            mouse1.left = true;
+        }
         if (keyCode == 83) { // s
             user.down = true;
         }
+        if (keyCode == 40) { // down arrow
+            mouse1.down = true;
+        }
         if (keyCode == 87) { // w
             user.up = true;
+        }
+        if (keyCode == 38) { // up arrow
+            mouse1.up = true;
+        }
+        if (keyCode == 32) { // spacebar
+            sword.space = true;
         }
     }//keyPressed()
 
@@ -146,14 +368,29 @@ public class CheeseWorld implements Runnable, KeyListener {
         if (keyCode == 68) { // d
             user.right = false;
         }
+        if (keyCode == 39) { // right arrow
+            mouse1.right = false;
+        }
         if (keyCode == 65) { // a
             user.left = false;
+        }
+        if (keyCode == 37) { // left arrow
+            mouse1.left = false;
         }
         if (keyCode == 83) { // s
             user.down = false;
         }
+        if (keyCode == 40) { // down arrow
+            mouse1.down = false;
+        }
         if (keyCode == 87) { // w
             user.up = false;
+        }
+        if (keyCode == 38) { // up arrow
+            mouse1.up = false;
+        }
+        if (keyCode == 32) { // spacebar
+            sword.space = false;
         }
 
     }//keyReleased()

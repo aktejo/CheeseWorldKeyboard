@@ -20,13 +20,14 @@ public class Player {
     public boolean down;
     public boolean up;
 
+    public int speed;
 
     public Player(int pXpos, int pYpos, int dxParameter, int dyParameter, Image picParameter) {
 
         xpos = pXpos;
         ypos = pYpos;
-        width = 100;
-        height = 100;
+        width = 75;
+        height = 75;
         dx = dxParameter;
         dy = dyParameter;
         pic = picParameter;
@@ -40,18 +41,20 @@ public class Player {
         xpos = xpos + dx;
         ypos = ypos + dy;
 
+        speed = 4;
+
         if(right == true){
-           dx = 2;
+           dx = speed;
         } else if (left == true) {
-            dx = -2;
+            dx = -speed;
         } else { // (right == false && left == false)
             dx = 0;
         }
 
         if(down == true){
-            dy = 2;
+            dy = speed;
         } else if (up == true) {
-            dy = -2;
+            dy = -speed;
         } else {
             dy = 0;
         }
@@ -71,7 +74,7 @@ public class Player {
 
 
         //always put this after you've done all the changing of the xpos and ypos values
-        rec = new Rectangle(xpos, ypos, width, height);
+        rec = new Rectangle(xpos, ypos, width-10, height);
 
     }
 
